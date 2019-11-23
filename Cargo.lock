@@ -830,10 +830,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nannou-practice"
-version = "0.1.0"
-
-[[package]]
 name = "nix"
 version = "0.14.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

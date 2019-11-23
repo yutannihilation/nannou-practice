@@ -6,11 +6,12 @@ fn main() {
 
 struct Model;
 
-fn model(app: &App) -> Model {
-    app.new_window().event(event).view(view).build().unwrap();
+fn model(_app: &App) -> Model {
+    _app.new_window().event(event).view(view).build().unwrap();
+    Model
 }
 
-fn update(app: &App, _model: &mut Model, _update: Update) {}
+fn update(_app: &App, _model: &mut Model, _update: Update) {}
 
 fn event(_app: &App, _model: &mut Model, event: WindowEvent) {
     println!("{:?}", event);
