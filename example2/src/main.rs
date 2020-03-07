@@ -19,11 +19,11 @@ fn model(app: &App) -> Model {
     println!("c = {}", c);
     println!("message = {}", message);
 
-    app.new_window().with_dimensions(640, 480).build().unwrap();
+    app.new_window().size(640, 480).build().unwrap();
 
     Model
 }
 
-fn view(_app: &App, _model: &Model, frame: &Frame) {
+fn view(_app: &App, _model: &Model, frame: Frame) {
     frame.clear(DIMGRAY);
 }
