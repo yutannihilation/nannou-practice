@@ -1,41 +1,31 @@
 use nannou::prelude::*;
 
-const GLOBAL: i32 = 10;
+struct Model {}
 
 fn main() {
-    nannou::app(model).run();
+    nannou::app(model).event(event).simple_window(view).run();
 }
 
-struct Model {
-    foo: i32,
-    bar: f64,
+fn model(_app: &App) -> Model {
+    Model {}
 }
 
-fn model(app: &App) -> Model {
-    app.new_window().event(event).view(view).build().unwrap();
+fn event(_app: &App, _model: &mut Model, _event: Event) {}
 
-    let foo = 80;
-    let bar = 3.14;
-    Model { foo, bar }
-}
+fn view(app: &App, _model: &Model, frame: Frame) {
+    let draw = app.draw();
 
-fn event(_app: &App, model: &mut Model, event: WindowEvent) {
-    match event {
-        KeyPressed(_key) => {
-            println!("foo = {}", model.foo);
-            println!("bar = {}", model.bar);
-        }
-        KeyReleased(_key) => {
-            let local_var = 94;
-            println!("local_variable to KeyReleased = {}", local_var);
-        }
-        MousePressed(_button) => {
-            println!("global scope: GLOBAL = {}", GLOBAL);
-        }
-        _other => (),
-    }
-}
+    draw.background().color(PLUM);
 
-fn view(_app: &App, _model: &Model, frame: Frame) {
-    frame.clear(RED);
+    let sine = app.time.sin();
+    let slowsine = (app.time / 2.0).sin();
+    let boundary = app.window_rect();
+
+    let x = map_range(sine, -1.0, 1.0, boundary.left(), boundary.right());
+    let y = map_range(slowsine, -1.0, 1.0, boundary.bottom(), boundary.top());
+
+    // Draw a blue ellipse with a radius of 10 at the (x,y) coordinates of (0.0, 0.0)
+    draw.ellipse().color(STEELBLUE).x_y(x, y);
+
+    draw.to_frame(app, &frame).unwrap();
 }
