@@ -1,29 +1,24 @@
 use nannou::prelude::*;
 
 fn main() {
-    nannou::app(model).view(view).run();
+    nannou::sketch(view).run();
 }
 
-struct Model;
+fn view(app: &App, frame: Frame) {
+    let draw = app.draw();
 
-fn model(app: &App) -> Model {
-    let i = 50;
-    let f = 36.6;
-    let b = true;
-    let c = '!';
-    let message = "hello world";
+    draw.background().color(PLUM);
 
-    println!("i = {}", i);
-    println!("f = {}", f);
-    println!("b = {}", b);
-    println!("c = {}", c);
-    println!("message = {}", message);
+    let radius = 150.0;
 
-    app.new_window().size(640, 480).build().unwrap();
+    let points = (0..=360).step_by(45).map(|i| {
+        let radian = deg_to_rad(i as f32);
+        let x = radius * radian.sin();
+        let y = radius * radian.cos();
+        (pt2(x, y), STEELBLUE)
+    });
 
-    Model
-}
+    draw.polygon().points_colored(points);
 
-fn view(_app: &App, _model: &Model, frame: Frame) {
-    frame.clear(DIMGRAY);
+    draw.to_frame(app, &frame).unwrap();
 }
