@@ -151,6 +151,43 @@
             },
             "args": [],
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'simple_shader'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=simple_shader",
+                    "--package=simple_shader"
+                ],
+                "filter": {
+                    "name": "simple_shader",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'simple_shader'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=simple_shader",
+                    "--package=simple_shader"
+                ],
+                "filter": {
+                    "name": "simple_shader",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

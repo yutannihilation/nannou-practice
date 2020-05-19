@@ -4,4 +4,7 @@ members = [
     "example2",
     "example3",
     "example4",
+    "simple_shader",
+    "stripes",
+    "simple_3d_rotation",
 ]
