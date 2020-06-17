@@ -8,3 +8,5 @@ edition = "2018"
 
 [dependencies]
 nannou = { version = "0.14.1", path = "../../nannou/nannou" }
+lyon = { git = "https://github.com/nical/lyon" }
+bytemuck = "1.2.0"
