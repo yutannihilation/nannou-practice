@@ -49,7 +49,7 @@ fn model(app: &App) -> Model {
     let format = Frame::TEXTURE_FORMAT;
     let sample_count = window.msaa_samples();
 
-    let tolerance = 0.02;
+    let tolerance = 0.01;
 
     let mut geometry: VertexBuffers<Vertex, u16> = VertexBuffers::new();
 
@@ -58,11 +58,14 @@ fn model(app: &App) -> Model {
 
     // Build a Path.
     let mut builder = Path::builder();
-    builder.begin(point(0.0, 0.0));
-    builder.line_to(point(1.0, 0.0));
-    builder.quadratic_bezier_to(point(2.0, 0.0), point(2.0, 1.0));
-    builder.cubic_bezier_to(point(1.0, 1.0), point(0.0, 1.0), point(0.0, 0.0));
-    builder.end(true);
+    builder.begin(point(-0.1, -0.1));
+    builder.line_to(point(0.1, -0.1));
+    builder.line_to(point(0.1, 0.1));
+    builder.line_to(point(-0.1, 0.1));
+    builder.line_to(point(0.0, 0.4));
+    // builder.quadratic_bezier_to(point(0.2, 0.0), point(0.2, 0.1));
+    // builder.cubic_bezier_to(point(0.1, 0.1), point(0.0, 0.1), point(0.0, 0.0));
+    builder.end(false);
     let path = builder.build();
 
     let fill_count = fill_tess
@@ -110,6 +113,7 @@ fn model(app: &App) -> Model {
         .fragment_shader(&fs_mod)
         .color_format(format)
         .add_vertex_buffer::<Vertex>(&wgpu::vertex_attr_array![0 => Float2])
+        .index_format(wgpu::IndexFormat::Uint16)
         .sample_count(sample_count)
         .build(device);
 
