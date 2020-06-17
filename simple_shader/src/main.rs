@@ -1,13 +1,4 @@
-//! A simple demonstration on how to create and draw with a custom wgpu render pipeline in nannou!
-//!
-//! The aim of this example is not to show the simplest way of drawing a triangle in nannou, but
-//! rather provide a reference on how to get started creating your own rendering pipeline from
-//! scratch. While nannou's provided graphics-y APIs can do a lot of things quite efficiently,
-//! writing a custom pipeline that does only exactly what you need it to can sometimes result in
-//! better performance.
-
-use lyon::math::{point, Point};
-use lyon::path::builder::*;
+use lyon::math::point;
 use lyon::path::Path;
 use lyon::tessellation;
 use lyon::tessellation::geometry_builder::*;
@@ -126,13 +117,9 @@ fn model(app: &App) -> Model {
 }
 
 // Draw the state of your `Model` into the given `Frame` here.
-fn view(app: &App, model: &Model, frame: Frame) {
-    // Using this we will encode commands that will be submitted to the GPU.
+fn view(_app: &App, model: &Model, frame: Frame) {
     let mut encoder = frame.command_encoder();
 
-    // The render pass can be thought of a single large command consisting of sub commands. Here we
-    // begin a render pass that outputs to the frame's texture. Then we add sub-commands for
-    // setting the bind group, render pipeline, vertex buffers and then finally drawing.
     let mut render_pass = wgpu::RenderPassBuilder::new()
         .color_attachment(frame.texture_view(), |color| color)
         .begin(&mut encoder);
