@@ -60,9 +60,6 @@ fn model(app: &App) -> Model {
     let mut builder = Path::builder();
     builder.begin(point(-0.1, -0.1));
     builder.line_to(point(0.1, -0.1));
-    builder.line_to(point(0.1, 0.1));
-    builder.line_to(point(-0.1, 0.1));
-    builder.line_to(point(0.0, 0.4));
     // builder.quadratic_bezier_to(point(0.2, 0.0), point(0.2, 0.1));
     // builder.cubic_bezier_to(point(0.1, 0.1), point(0.0, 0.1), point(0.0, 0.0));
     builder.end(false);
@@ -115,6 +112,7 @@ fn model(app: &App) -> Model {
         .add_vertex_buffer::<Vertex>(&wgpu::vertex_attr_array![0 => Float2])
         .index_format(wgpu::IndexFormat::Uint16)
         .sample_count(sample_count)
+        .primitive_topology(wgpu::PrimitiveTopology::LineList)
         .build(device);
 
     Model {
