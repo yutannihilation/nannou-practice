@@ -67,7 +67,7 @@ fn model(app: &App) -> Model {
     stroke_tess
         .tessellate_path(
             &path,
-            &StrokeOptions::tolerance(tolerance),
+            &StrokeOptions::tolerance(tolerance).with_line_width(0.005),
             &mut BuffersBuilder::new(&mut geometry, |vertex: tessellation::StrokeVertex| Vertex {
                 position: vertex.position().to_array(),
             }),
