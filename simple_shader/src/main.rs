@@ -101,7 +101,7 @@ fn model(app: &App) -> Model {
         .add_vertex_buffer::<Vertex>(&wgpu::vertex_attr_array![0 => Float2])
         .index_format(wgpu::IndexFormat::Uint16)
         .sample_count(sample_count)
-        .primitive_topology(wgpu::PrimitiveTopology::LineList)
+        .primitive_topology(wgpu::PrimitiveTopology::TriangleList)
         .build(device);
 
     Model {
