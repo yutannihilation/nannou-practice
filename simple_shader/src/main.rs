@@ -40,7 +40,7 @@ fn model(app: &App) -> Model {
     let format = Frame::TEXTURE_FORMAT;
     let sample_count = window.msaa_samples();
 
-    let tolerance = 0.01;
+    let tolerance = 0.0001;
 
     let mut geometry: VertexBuffers<Vertex, u16> = VertexBuffers::new();
 
@@ -49,11 +49,9 @@ fn model(app: &App) -> Model {
 
     // Build a Path.
     let mut builder = Path::builder();
-    builder.begin(point(-0.1, -0.1));
-    builder.line_to(point(0.1, -0.1));
-    // builder.quadratic_bezier_to(point(0.2, 0.0), point(0.2, 0.1));
-    // builder.cubic_bezier_to(point(0.1, 0.1), point(0.0, 0.1), point(0.0, 0.0));
-    builder.end(false);
+    builder.begin(point(0.0, 0.0));
+    builder.quadratic_bezier_to(point(1.5, 0.7), point(0.2, -0.9));
+    builder.end(true);
     let path = builder.build();
 
     let fill_count = fill_tess
