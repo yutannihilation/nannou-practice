@@ -119,7 +119,14 @@ fn view(_app: &App, model: &Model, frame: Frame) {
     let mut encoder = frame.command_encoder();
 
     let mut render_pass = wgpu::RenderPassBuilder::new()
-        .color_attachment(frame.texture_view(), |color| color)
+        .color_attachment(frame.texture_view(), |color| {
+            color.clear_color(wgpu::Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 1.0,
+            })
+        })
         .begin(&mut encoder);
 
     render_pass.set_bind_group(0, &model.bind_group, &[]);
