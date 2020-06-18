@@ -37,23 +37,19 @@ fn model(app: &App) -> Model {
     // The gpu device associated with the window's swapchain
     let window = app.window(w_id).unwrap();
     let device = window.swap_chain_device();
-    let format = Frame::TEXTURE_FORMAT;
-    let sample_count = window.msaa_samples();
-
-    let tolerance = 0.0001;
-
-    let mut geometry: VertexBuffers<Vertex, u16> = VertexBuffers::new();
-
-    let mut fill_tess = FillTessellator::new();
-    let mut stroke_tess = StrokeTessellator::new();
 
     // Build a Path.
     let mut builder = Path::builder();
     builder.begin(point(0.0, 0.0));
     builder.quadratic_bezier_to(point(1.5, 0.7), point(0.2, -0.9));
-    builder.end(true);
+    builder.end(false);
     let path = builder.build();
 
+    let mut geometry: VertexBuffers<Vertex, u16> = VertexBuffers::new();
+
+    let tolerance = 0.0001;
+
+    let mut fill_tess = FillTessellator::new();
     let fill_count = fill_tess
         .tessellate_path(
             &path,
@@ -64,6 +60,7 @@ fn model(app: &App) -> Model {
         )
         .unwrap();
 
+    let mut stroke_tess = StrokeTessellator::new();
     stroke_tess
         .tessellate_path(
             &path,
@@ -97,10 +94,10 @@ fn model(app: &App) -> Model {
     let pipeline_layout = wgpu::create_pipeline_layout(device, &[&bind_group_layout]);
     let render_pipeline = wgpu::RenderPipelineBuilder::from_layout(&pipeline_layout, &vs_mod)
         .fragment_shader(&fs_mod)
-        .color_format(format)
+        .color_format(Frame::TEXTURE_FORMAT)
         .add_vertex_buffer::<Vertex>(&wgpu::vertex_attr_array![0 => Float2])
         .index_format(wgpu::IndexFormat::Uint16)
-        .sample_count(sample_count)
+        .sample_count(window.msaa_samples())
         .primitive_topology(wgpu::PrimitiveTopology::TriangleList)
         .build(device);
 
@@ -121,9 +118,9 @@ fn view(_app: &App, model: &Model, frame: Frame) {
     let mut render_pass = wgpu::RenderPassBuilder::new()
         .color_attachment(frame.texture_view(), |color| {
             color.clear_color(wgpu::Color {
-                r: 0.0,
-                g: 0.0,
-                b: 0.0,
+                r: 0.6,
+                g: 0.6,
+                b: 0.6,
                 a: 1.0,
             })
         })
@@ -134,6 +131,6 @@ fn view(_app: &App, model: &Model, frame: Frame) {
     render_pass.set_index_buffer(&model.index_buffer, 0, 0);
     render_pass.set_vertex_buffer(0, &model.vertex_buffer, 0, 0);
 
-    render_pass.draw_indexed(model.fill_range.clone(), 0, 0..1);
+    // render_pass.draw_indexed(model.fill_range.clone(), 0, 0..1);
     render_pass.draw_indexed(model.stroke_range.clone(), 0, 0..1);
 }
