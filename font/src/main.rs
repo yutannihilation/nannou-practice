@@ -27,7 +27,7 @@ struct Model {
     colliders: ColliderSet,
     joints: JointSet,
 
-    point_indices: Vec<Index>,
+    point_indices: Vec<Vec<Index>>,
 
     record: bool,
     recording_frame: u32,
@@ -176,7 +176,7 @@ fn model(_app: &App) -> Model {
     let v_metrics = font.v_metrics(scale);
     let offset = rusttype::point(0.0, v_metrics.ascent);
 
-    let mut glyph = font.layout("崩", scale, offset);
+    let mut glyph = font.layout("落", scale, offset);
     let mut builder = Builder::new(TOLERANCE);
 
     for (glyph_id, g) in glyph.enumerate() {
@@ -206,10 +206,10 @@ fn model(_app: &App) -> Model {
 
     // Add ground
     let ground = RigidBodyBuilder::new_static()
-        .position(Isometry2::new(Vector2::new(0.0, -2.0), PI))
+        .position(Isometry2::new(Vector2::new(0.0, -5.0), PI))
         .build();
     let idx_ground = bodies.insert(ground);
-    let coll_ground = ColliderBuilder::capsule_x(10.0, 1.0)
+    let coll_ground = ColliderBuilder::capsule_x(100.0, 1.0)
         .friction(0.8)
         .density(100.0)
         .build();
@@ -257,7 +257,7 @@ fn model(_app: &App) -> Model {
         //     joints.insert(&mut bodies, idx, idx_next, joint_params);
         // }
 
-        point_indices.append(&mut point_indices_inner);
+        point_indices.push(point_indices_inner);
     }
 
     Model {
@@ -308,31 +308,33 @@ fn view(app: &App, model: &Model, frame: Frame) {
 
     draw.background().color(nannou::color::rgb_u32(0xDEC2CB));
 
-    let p_len = model.point_indices.len();
-    for i in 0..p_len {
-        let idx = model.point_indices[i];
+    for point_indices in &model.point_indices {
+        let p_len = point_indices.len();
+        for i in 0..p_len {
+            let idx = point_indices[i];
 
-        // add point
-        let p = model.bodies.get(idx).unwrap();
-        let p_homo = p.position.to_homogeneous() * 40.0;
-        draw.ellipse()
-            .x_y(p_homo[(0, 2)], p_homo[(1, 2)])
-            .radius(4.5)
-            .color(nannou::color::rgb_u32(0x91163D));
+            // add point
+            let p = model.bodies.get(idx).unwrap();
+            let p_homo = p.position.to_homogeneous() * 40.0;
+            draw.ellipse()
+                .x_y(p_homo[(0, 2)], p_homo[(1, 2)])
+                .radius(4.5)
+                .color(nannou::color::rgb_u32(0x91163D));
 
-        // if there's only one point, there's no lines
-        if p_len == 1 {
-            break;
+            // if there's only one point, there's no lines
+            if p_len == 1 {
+                break;
+            }
+
+            let idx_next = point_indices[(i + 1) % p_len];
+            let p_next = model.bodies.get(idx_next).unwrap();
+            let p_next_homo = p_next.position.to_homogeneous() * 40.0;
+            draw.line()
+                .start(pt2(p_homo[(0, 2)], p_homo[(1, 2)]))
+                .end(pt2(p_next_homo[(0, 2)], p_next_homo[(1, 2)]))
+                .weight(3.2)
+                .color(nannou::color::rgb_u32(0x91163D));
         }
-
-        let idx_next = model.point_indices[(i + 1) % p_len];
-        let p_next = model.bodies.get(idx_next).unwrap();
-        let p_next_homo = p_next.position.to_homogeneous() * 40.0;
-        draw.line()
-            .start(pt2(p_homo[(0, 2)], p_homo[(1, 2)]))
-            .end(pt2(p_next_homo[(0, 2)], p_next_homo[(1, 2)]))
-            .weight(3.2)
-            .color(nannou::color::rgb_u32(0x91163D));
     }
 
     draw.to_frame(app, &frame).unwrap();
