@@ -14,7 +14,8 @@ use lyon::path::Path;
 
 use std::f32::consts::PI;
 
-const TOLERANCE: f32 = 0.001;
+const TOLERANCE: f32 = 0.01;
+const HEIGHT: f32 = 10.0;
 
 struct Model {
     pipeline: PhysicsPipeline,
@@ -32,13 +33,6 @@ struct Model {
     recording_frame: u32,
 }
 
-struct Point {
-    x: f32,
-    y: f32,
-    id: u32,
-    glyph_id: u32,
-}
-
 struct Builder {
     cur_path_id: u32,
     cur_glyph_id: u32,
@@ -47,8 +41,6 @@ struct Builder {
     tolerance: f32,
     builder: lyon::path::BuilderWithAttributes,
 }
-
-const HEIGHT: f32 = 10.0;
 
 impl Builder {
     fn new(tolerance: f32) -> Self {
@@ -66,29 +58,30 @@ impl Builder {
     // rusttype returns the positions to the origin, so we need to
     // move to each offsets by ourselves
     fn point(&self, x: f32, y: f32) -> lyon::math::Point {
-        point((x + self.offset_x), (y + self.offset_y))
+        point(x + self.offset_x, self.offset_y - y)
     }
 
     fn next_glyph(&mut self, glyph_id: u32, bbox: &rusttype::Rect<i32>) {
         self.cur_glyph_id = glyph_id;
         self.offset_x = bbox.min.x as _;
-        self.offset_y = bbox.min.y as _;
+        self.offset_y = bbox.max.y as _;
     }
 
-    fn to_path(self, height: f32) -> Vec<Vec<Point2<f32>>> {
+    fn to_path(self) -> Vec<Vec<Point2<f32>>> {
         let path = self.builder.build();
 
         let mut result = vec![];
         let mut points: Vec<Point2<f32>> = vec![];
 
         for p in path.iter_with_attributes() {
+            println!("{:?}", p);
             match p {
-                Begin { at } => points.push(Point2::new(at.0.x, at.0.y)),
+                Begin { .. } => {}
                 Line { from, to } => points.push(Point2::new(to.0.x, to.0.y)),
                 Quadratic { from, ctrl, to } => {
                     let seg = lyon::geom::QuadraticBezierSegment {
                         from: from.0,
-                        ctrl: ctrl,
+                        ctrl,
                         to: to.0,
                     };
                     // skip the first point as it's already added
@@ -104,8 +97,8 @@ impl Builder {
                 } => {
                     let seg = lyon::geom::CubicBezierSegment {
                         from: from.0,
-                        ctrl1: ctrl1,
-                        ctrl2: ctrl2,
+                        ctrl1,
+                        ctrl2,
                         to: to.0,
                     };
                     // skip the first point as it's already added
@@ -114,7 +107,7 @@ impl Builder {
                     }
                 }
                 End { last, first, close } => {
-                    points.push(Point2::new(last.0.x, last.0.y));
+                    // points.push(Point2::new(last.0.x, last.0.y));
                     result.push(points.clone());
                     points.clear();
                 }
@@ -172,7 +165,10 @@ fn main() {
 
 fn model(_app: &App) -> Model {
     let font = rusttype::Font::try_from_bytes(include_bytes!(
-        "/usr/share/fonts/TTF/iosevka-heavyitalic.ttf"
+        // "/usr/share/fonts/TTF/iosevka-heavyitalic.ttf"
+        // "../fonts/UniHentaiKana-Regular.otf"
+        // "/usr/share/fonts/gsfonts/C059-Roman.otf"
+        "../fonts/ipam.ttf"
     ))
     .unwrap();
 
@@ -180,14 +176,23 @@ fn model(_app: &App) -> Model {
     let v_metrics = font.v_metrics(scale);
     let offset = rusttype::point(0.0, v_metrics.ascent);
 
-    let mut glyph = font.layout("a", scale, offset);
+    let mut glyph = font.layout("崩", scale, offset);
     let mut builder = Builder::new(TOLERANCE);
 
-    let g = glyph.next().unwrap();
-    builder.next_glyph(0, &g.pixel_bounding_box().unwrap());
-    g.build_outline(&mut builder);
+    for (glyph_id, g) in glyph.enumerate() {
+        if let Some(bbox) = g.pixel_bounding_box() {
+            // bbox_y.push(bbox.max.y);
+            builder.next_glyph(glyph_id as _, &bbox);
+        } else {
+            continue;
+        }
 
-    let font_points = builder.to_path(HEIGHT);
+        if !g.build_outline(&mut builder) {
+            println!("empty");
+        }
+    }
+
+    let font_points = builder.to_path();
 
     let pipeline = PhysicsPipeline::new();
     let gravity = Vector2::new(0.0, -9.81);
@@ -204,7 +209,7 @@ fn model(_app: &App) -> Model {
         .position(Isometry2::new(Vector2::new(0.0, -2.0), PI))
         .build();
     let idx_ground = bodies.insert(ground);
-    let coll_ground = ColliderBuilder::capsule_x(100.0, PI / 24.0)
+    let coll_ground = ColliderBuilder::capsule_x(10.0, 1.0)
         .friction(0.8)
         .density(100.0)
         .build();
@@ -218,11 +223,13 @@ fn model(_app: &App) -> Model {
         // Add points
         for pos in points.iter() {
             let vec = pos - Point2::origin();
-            println!("{:?}", vec);
+
+            let rot = (pos - Point2::new(3.2, 2.2)) / 4.0;
+
             let p = RigidBodyBuilder::new_dynamic()
                 // Note: the unit of position is meter, as I set the gravity to -9.81.
                 .position(Isometry2::new(vec, PI))
-                .linvel(-0.5, 5.0)
+                .linvel(-0.5 - rot[1], 3.0 + rot[0])
                 .build();
 
             let idx = bodies.insert(p);
@@ -272,7 +279,7 @@ fn model(_app: &App) -> Model {
 
 fn event(_app: &App, _model: &mut Model, _event: Event) {}
 
-fn update(app: &App, model: &mut Model, update: Update) {
+fn update(_app: &App, model: &mut Model, _update: Update) {
     if model.record {
         if model.recording_frame >= 999 {
             println!("Finish recording");
